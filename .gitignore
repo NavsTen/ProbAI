@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+
+# Environments
+.venv/
+venv/
+env/
+
+# Tests and tooling
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+.mypy_cache/
+
+# Trained models (can be regenerated; also pickle files should not be shared blindly)
+*.joblib
+*.pkl
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
