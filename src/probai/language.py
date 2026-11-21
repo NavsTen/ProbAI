@@ -96,6 +96,8 @@ _END = r"(?![а-яё])"
 _START = r"(?<![а-яё])"
 
 _RULES_SRC: List[Tuple[str, str]] = [
+    (r"\bбез\s+(?:возврата|возвращения)\b", "without replacement"),
+    (r"\bс\s+(?:возвратом|возвращением)\b", "with replacement"),
     # ---- units that follow numbers
     (r"(\d)\s*(?:дб|db)" + _END, r"\1 dB"),
     (_w("децибел"), "dB"),

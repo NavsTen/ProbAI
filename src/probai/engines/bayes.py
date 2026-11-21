@@ -59,8 +59,10 @@ class BayesEngine(Engine):
         sensitivity = as_probability(params["sensitivity"], "sensitivity")
         if params.get("specificity") is not None:
             specificity = as_probability(params["specificity"], "specificity")
+            false_positive_rate = 1.0 - specificity
         else:
-            specificity = 1.0 - as_probability(params["false_positive_rate"], "false_positive_rate")
+            false_positive_rate = as_probability(params["false_positive_rate"], "false_positive_rate")
+            specificity = 1.0 - false_positive_rate
 
         evidence = str(
             first_not_none(params.get("evidence"), "negative" if re.search(r"\bnegative\b", text.lower()) else "positive")
@@ -69,7 +71,7 @@ class BayesEngine(Engine):
             raise ValueError("'evidence' must be 'positive' or 'negative'.")
 
         if evidence == "positive":
-            p_e_given_h, p_e_given_not_h = sensitivity, 1.0 - specificity
+            p_e_given_h, p_e_given_not_h = sensitivity, false_positive_rate
         else:
             p_e_given_h, p_e_given_not_h = 1.0 - sensitivity, specificity
 

@@ -325,3 +325,40 @@ def test_urn_multiple_draws():
     assert ai.estimate("A box holds 5 red and 7 blue balls. Probability of drawing 2 red balls in a row?").probability == pytest.approx(20 / 132)
     assert ai.estimate("An urn has 4 red, 6 green marbles. You draw 3 marbles. Probability of at least one red?").probability == pytest.approx(1 - comb(6, 3) / comb(10, 3))
     assert ai.estimate("A bag contains 4 red and 6 green marbles. Draw 3 marbles with replacement; probability exactly 2 are red?").probability == pytest.approx(3 * 0.4**2 * 0.6)
+
+
+@pytest.mark.parametrize("mode,expected", [("with", 0.25), ("without", 1 / 6)])
+def test_urn_replacement_mode(mode, expected):
+    question = f"A bag has 2 red and 2 blue balls. Draw 2 {mode} replacement. Probability that both are red?"
+    assert ClassicalEngine().estimate(question, {}).probability == pytest.approx(expected)
+
+
+@pytest.mark.parametrize("parameter", ["annual_pd", "hazard_rate"])
+def test_rare_default(parameter):
+    result = FinanceEngine().estimate("", {parameter: 1e-20, "years": 2})
+    assert result.probability == pytest.approx(2e-20, rel=1e-12, abs=0)
+
+
+def test_rare_price_exceedance():
+    result = FinanceEngine().estimate("", {
+        "spot": 1, "strike": math.exp(9), "volatility": 1, "years": 1,
+        "drift": 0.5, "direction": "above",
+    })
+    assert result.probability == pytest.approx(q_func(9), rel=1e-12, abs=0)
+
+
+def test_rare_failure():
+    result = ReliabilityEngine().estimate("", {"mtbf": 1e20, "time": 1})
+    assert result.probability == pytest.approx(1e-20, rel=1e-12, abs=0)
+
+
+def test_large_weibull_hazard():
+    result = ReliabilityEngine().estimate("", {"shape": 1000, "scale": 1, "time": 10})
+    assert result.probability == 1
+
+
+def test_rare_false_positive():
+    result = BayesEngine().estimate("", {
+        "prior": 1e-20, "sensitivity": 1, "false_positive_rate": 1e-20,
+    })
+    assert result.probability == pytest.approx(0.5)
