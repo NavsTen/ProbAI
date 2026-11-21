@@ -67,12 +67,12 @@ class FinanceEngine(Engine):
         years = as_positive(params["years"], "years")
         if params.get("hazard_rate") is not None:
             lam = as_positive(params["hazard_rate"], "hazard_rate", allow_zero=True)
-            prob = 1.0 - math.exp(-lam * years)
+            prob = -math.expm1(-lam * years)
             method = "Constant hazard rate: P(default by t) = 1 - exp(-lambda * t)"
             detail = {"hazard_rate": lam}
         else:
             pd = as_probability(params["annual_pd"], "annual_pd")
-            prob = 1.0 - (1.0 - pd) ** years
+            prob = 1.0 if pd == 1.0 else -math.expm1(years * math.log1p(-pd))
             method = "Independent yearly defaults: P(default by t) = 1 - (1 - PD)^t"
             detail = {"annual_pd": pd}
         return EngineResult(
@@ -103,9 +103,8 @@ class FinanceEngine(Engine):
         if direction not in ("above", "below"):
             raise ValueError("'direction' must be 'above' or 'below'.")
 
-        z = (math.log(strike / spot) - (drift - 0.5 * vol**2) * years) / (vol * math.sqrt(years))
-        p_below = float(norm.cdf(z))
-        prob = p_below if direction == "below" else 1.0 - p_below
+        z = ((math.log(strike) - math.log(spot)) - (drift - 0.5 * vol**2) * years) / (vol * math.sqrt(years))
+        prob = float(norm.cdf(z) if direction == "below" else norm.sf(z))
         return EngineResult(
             probability=prob,
             method="Geometric Brownian motion (lognormal price at the horizon)",

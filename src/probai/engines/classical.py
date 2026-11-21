@@ -58,7 +58,7 @@ def _parse_urn_text(text: str) -> Dict[str, Any]:
     if m:
         target = m.group(1)
     draws = None
-    m = re.search(rf"\b(?:draw\w*|pick\w*|tak\w+|pull\w*|select\w*|get\w*|grab\w*)\s+{NUM}\s+(?:{_COLORS}\s+)?{_URN_ITEMS}\b", t) or re.search(
+    m = re.search(rf"\b(?:draw\w*|pick\w*|tak\w+|pull\w*|select\w*|get\w*|grab\w*)\s+{NUM}\s+(?:(?:{_COLORS}\s+)?{_URN_ITEMS}\b|(?:with|without) replacement\b)", t) or re.search(
         rf"\b{NUM}\s+(?:attempts?|draws?|tries)\b", t
     )
     if m:
@@ -73,7 +73,7 @@ def _parse_urn_text(text: str) -> Dict[str, Any]:
         "draws": draws,
         "k": k,
         "comparison": infer_comparison(ask),
-        "replacement": bool(re.search(r"\bwith replacement\b|\bput(?:s|ting)? (?:it |them )?back\b|\breplac", t)),
+        "replacement": bool(re.search(r"\bwith replacement\b|\bput(?:s|ting)? (?:it |them )?back\b|\breplac(?:e|es|ing) (?:it|them)\b", t) and not re.search(r"\bwithout (?:replacement|replacing|putting)\b", t)),
     }
 
 

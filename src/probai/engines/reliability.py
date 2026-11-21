@@ -52,17 +52,21 @@ class ReliabilityEngine(Engine):
 
         if has_exp:
             mtbf = as_positive(params["mtbf"], "mtbf")
-            survival = math.exp(-time / mtbf)
+            hazard = time / mtbf
             method = "Exponential lifetime (constant failure rate)"
             detail = {"mtbf": mtbf}
         else:
             shape = as_positive(params["shape"], "shape")
             scale = as_positive(params["scale"], "scale")
-            survival = math.exp(-((time / scale) ** shape))
+            try:
+                hazard = (time / scale) ** shape
+            except OverflowError:
+                hazard = math.inf
             method = "Weibull lifetime"
             detail = {"shape": shape, "scale": scale}
 
-        prob = survival if outcome == "survival" else 1.0 - survival
+        survival = math.exp(-hazard)
+        prob = survival if outcome == "survival" else -math.expm1(-hazard)
         return EngineResult(
             probability=prob,
             method=method,

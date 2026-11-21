@@ -34,8 +34,8 @@ What it is **not**: it does not predict the future from nothing. A probability a
 ## Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/probai.git
-cd probai
+git clone https://github.com/NavsTen/ProbAI.git
+cd ProbAI
 pip install -e .
 ```
 
